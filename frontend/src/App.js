@@ -6,7 +6,9 @@ import {
     Layout,
     Menu,
     Breadcrumb,
-    Table
+    Table,
+    Empty,
+    Spin
 } from 'antd';
 import {
     DesktopOutlined,
@@ -14,6 +16,7 @@ import {
     FileOutlined,
     TeamOutlined,
     UserOutlined,
+    LoadingOutlined
 } from '@ant-design/icons';
 const { Header, Content, Footer, Sider } = Layout;
 
@@ -62,36 +65,51 @@ const columns = [
     }
 ];
 
+const antIcon = <LoadingOutlined style={{ fontSize: 24 }} spin />;
 
 
 function App() {
     const [students, setStudents] = useState([]);
     const [collapsed, setCollapsed] = useState(false);
+    const [fetching, setFetching] = useState(true);
 
     const fetchAllStudents = () =>
         getAllStudents()
             .then(res => res.json())
-            .then(data => setStudents(data));
+            .then(data => {
+                setStudents(data)
+                setFetching(false)
+            });
 
     useEffect(() => {
         console.log("mounted");
         fetchAllStudents();
+
     }, []);
 
     const renderStudents = () => {
-        if (students.length <= 0) {
-            return "no data available"
+        if (fetching) {
+            return <Spin indicator={antIcon} />
         }
 
-        return <Table dataSource={students}
-                      columns={columns}/>;
+        if (students.length <= 0) {
+            return <Empty />
+        }
+
+        return <Table
+            dataSource={students}
+            columns={columns}
+            bordered
+            title={() => 'Students'}
+            pagination={{ pageSize: 50 }}
+            scroll={{ y: 240 }}
+            rowKey={(student) => student.id }
+        />;
 
 
     }
 
-    // return students.map((student, index) => {
-    //     return <p key={index}> {student.id} {student.name} {student.email} {student.gender} </p>
-    // });
+
     return (
         <Layout
             style={{
@@ -137,7 +155,7 @@ function App() {
                         textAlign: 'center',
                     }}
                 >
-                    Ant Design ©2018 Created by Ant UED
+                    ©2022 Created by Omar
                 </Footer>
             </Layout>
         </Layout>
